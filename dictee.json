@@ -14,27 +14,12 @@
       ]
     },
     {
-      "id": "debutant_1775892452277",
-      "niveau": "debutant",
-      "titre": "Dictée 1",
-      "audio_complet": "https://raw.githubusercontent.com/ndiayejoseph123-code/Ay-dict-e/3cf1aeda7571cc282babfa39c2d25039dcf835bc/audio/samsou%20smousi%20khassida.m4a",
-      "texte_complet": "Samsousou smousi",
-      "phrases": [
-        {
-          "texte": "Samsousou smousi",
-          "audio": "https://raw.githubusercontent.com/ndiayejoseph123-code/Ay-dict-e/3cf1aeda7571cc282babfa39c2d25039dcf835bc/audio/samsou%20smousi%20khassida.m4a"
-        }
-      ]
-    },
-    {
       "id": "intermediaire_1775899401407",
       "niveau": "intermediaire",
       "titre": "La marche des femmes",
       "audio_complet": "https://raw.githubusercontent.com/ndiayejoseph123-code/Ay-dict-e/eff2a5f098e127a0fd2f8dd25ae9a580853a0ace/audio/la%20marche%20des%20femmes.aac",
-      "texte_complet": "### **La Marche des femmes** 👣\n\nDepuis qu'elles étaient sorties de Thiès **,** les femmes n'avaient cessé de chanter **.** Aussitôt qu'un groupe laissait mourir le refrain **,** un autre le reprenait **...**\n\nMaintenant le jour était venu **.** La route était trop étroite pour leur procession ,elle avançait déployée en éventail si bien que les unes marchaient dans la poussière **,** les autres dans l'herbe sèche et d'autres traversaient les rails **.**\n\nLe soleil était derrière elles **,** il tapait dur dans leur dos au fur et à mesure qu'il montait de l'horizon **.** Assez loin derrière **,** le moutonnement des femmes suivait les hommes de l'escorte **.**\n\nHommes et femmes traversaient le paysage que la saison sèche éprouvait durement.",
+      "texte_complet": "### **La Marche des femmes** 👣\n\nDepuis qu'elles étaient sorties de Thiès, les femmes n'avaient cessé de chanter. Aussitôt qu'un groupe laissait mourir le refrain, un autre le reprenait...\n\nMaintenant le jour était venu. La route était trop étroite pour leur procession, elle avançait déployée en éventail si bien que les unes marchaient dans la poussière, les autres dans l'herbe sèche et d'autres traversaient les rails.\n\nLe soleil était derrière elles, il tapait dur dans leur dos au fur et à mesure qu'il montait de l'horizon. Assez loin derrière, le moutonnement des femmes suivait les hommes de l'escorte.\n\nHommes et femmes traversaient le paysage que la saison sèche éprouvait durement.",
       "phrases": []
-    }
-  ]
     }
   ]
 }
