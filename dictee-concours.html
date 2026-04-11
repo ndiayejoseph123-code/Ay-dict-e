@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier Dictée — Préparation Concours</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1209;--paper:#f5f0e8;--paper-dark:#ede7d5;--ruled:#c8bfa8;--red:#c0392b;--blue:#1a3a6b;--gold:#b8860b;--green:#1e6b3a;--shadow:rgba(26,18,9,.12);--deb:#2e7d5a;--int:#1a3a6b;--avx:#8b1a1a;--admin:#5b2d8e}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#d4c9b0;background-image:radial-gradient(ellipse at 20% 50%,rgba(180,160,100,.3) 0,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(100,80,40,.2) 0,transparent 50%);min-height:100vh;font-family:'Crimson Pro',Georgia,serif;color:var(--ink);padding:18px 14px 60px}
+/* TOP BAR */
+.topbar{max-width:720px;margin:0 auto 18px;display:flex;justify-content:space-between;align-items:center}
+.app-logo{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--blue);font-weight:700}
+.app-logo em{font-style:italic;color:var(--red)}
+.btn-mode{padding:7px 14px;border-radius:20px;border:1.5px solid;cursor:pointer;font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s}
+.btn-mode.to-admin{border-color:var(--admin);color:var(--admin);background:transparent}
+.btn-mode.to-admin:hover{background:var(--admin);color:white}
+.btn-mode.to-eleve{border-color:var(--blue);color:var(--blue);background:transparent}
+.btn-mode.to-eleve:hover{background:var(--blue);color:white}
+/* CARDS */
+.card{background:var(--paper);border-radius:3px;box-shadow:0 2px 8px var(--shadow),0 8px 24px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.6);max-width:720px;margin:0 auto 18px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;left:52px;top:0;bottom:0;width:1px;background:rgba(200,60,60,.3)}
+.inner{padding:24px 22px 26px 68px}
+.ml{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.sh{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--ink);margin-bottom:14px;font-weight:700}
+/* HEADER */
+.header{text-align:center;margin-bottom:28px;animation:fadeDown .7s ease both}
+.hbadge{display:inline-block;background:var(--blue);color:#f5f0e8;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;padding:5px 16px;border-radius:2px;margin-bottom:12px}
+.header h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,7vw,3.2rem);color:var(--blue);line-height:1.1;font-weight:700}
+.header h1 em{font-style:italic;color:var(--red)}
+.hsub{font-size:.95rem;color:#5a4e3a;margin-top:6px;font-style:italic}
+.hline{width:80px;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:14px auto 0}
+/* LEVEL BTNS */
+.level-btns{display:flex;gap:10px;flex-wrap:wrap}
+.level-btn{flex:1;min-width:110px;padding:12px 8px;border:1.5px solid;border-radius:3px;background:transparent;cursor:pointer;font-family:'Playfair Display',serif;transition:all .2s}
+.level-btn .li{font-size:1.2rem;display:block;margin-bottom:3px}
+.level-btn .ln{display:block;font-weight:700;font-size:.82rem;font-style:normal;letter-spacing:.5px}
+.level-btn .ld{display:block;font-size:.68rem;font-style:italic;opacity:.7;margin-top:2px;font-family:'Crimson Pro',serif}
+.level-btn[data-l=debutant]{border-color:var(--deb);color:var(--deb)}.level-btn[data-l=debutant]:hover,.level-btn[data-l=debutant].active{background:var(--deb);color:white}
+.level-btn[data-l=intermediaire]{border-color:var(--int);color:var(--int)}.level-btn[data-l=intermediaire]:hover,.level-btn[data-l=intermediaire].active{background:var(--int);color:white}
+.level-btn[data-l=avance]{border-color:var(--avx);color:var(--avx)}.level-btn[data-l=avance]:hover,.level-btn[data-l=avance].active{background:var(--avx);color:white}
+/* DICTEE LIST */
+.di{padding:12px 14px;border:1px solid var(--ruled);border-radius:2px;margin-bottom:8px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.4);display:flex;align-items:center;gap:12px}
+.di:hover{background:rgba(255,255,255,.8);border-color:var(--blue);transform:translateX(3px)}
+.di-num{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--gold);min-width:24px}
+.di-ti{font-family:'Playfair Display',serif;font-size:.9rem;font-style:italic;flex:1}
+.di-arr{color:var(--ruled)}
+/* AUDIO */
+.audio-box{background:rgba(255,255,255,.5);border:1px solid var(--ruled);border-radius:3px;padding:13px 15px;margin-bottom:16px}
+.abtns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-a{display:flex;align-items:center;gap:7px;padding:10px 15px;border:none;border-radius:3px;cursor:pointer;font-family:'Crimson Pro',serif;font-size:.88rem;font-weight:600;transition:all .2s}
+.btn-af{background:var(--blue);color:white}.btn-af:hover{background:#0f2347}
+.btn-ap{background:var(--paper-dark);color:var(--blue);border:1.5px solid var(--blue)}.btn-ap:hover{background:var(--blue);color:white}
+.btn-a svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
+.pnav{display:none;align-items:center;gap:9px;margin-top:10px;flex-wrap:wrap}
+.pnav.vis{display:flex}
+.pc{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--blue);min-width:70px;text-align:center}
+.btn-nav{background:var(--paper-dark);border:1px solid var(--ruled);border-radius:2px;padding:5px 11px;cursor:pointer;font-size:.82rem;transition:all .2s}
+.btn-nav:hover:not(:disabled){background:var(--blue);color:white;border-color:var(--blue)}
+.btn-nav:disabled{opacity:.4;cursor:not-allowed}
+.ast{margin-top:7px;font-size:.76rem;color:var(--red);font-style:italic;min-height:16px}
+/* CAHIER */
+.cw{position:relative;border:1px solid var(--ruled);border-radius:3px;overflow:hidden;background:white}
+.cw::before{content:'';position:absolute;left:40px;top:0;bottom:0;width:1px;background:rgba(200,60,60,.2);z-index:1;pointer-events:none}
+.cahier{width:100%;min-height:190px;padding:12px 12px 12px 50px;font-family:'Crimson Pro',serif;font-size:1.05rem;line-height:2;border:none;outline:none;background:repeating-linear-gradient(to bottom,white,white calc(2em - 1px),#d4cbb5 calc(2em - 1px),#d4cbb5 2em);background-size:100% 2em;background-attachment:local;resize:vertical;color:var(--blue);letter-spacing:.02em}
+/* BTNS */
+.arow{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+.btn-p{padding:10px 20px;background:var(--blue);color:white;border:none;border-radius:3px;cursor:pointer;font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;transition:all .2s}
+.btn-p:hover{background:#0f2347;transform:translateY(-1px)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-s{padding:10px 16px;background:transparent;color:var(--ink);border:1.5px solid var(--ruled);border-radius:3px;cursor:pointer;font-family:'Crimson Pro',serif;font-size:.88rem;transition:all .2s}
+.btn-s:hover{border-color:var(--ink)}
+.btn-g{padding:10px 16px;background:transparent;color:var(--gold);border:1.5px solid var(--gold);border-radius:3px;cursor:pointer;font-family:'Crimson Pro',serif;font-size:.88rem;transition:all .2s}
+.btn-g:hover{background:var(--gold);color:white}
+/* TEXTE CACHÉ */
+.tcbox{display:none;margin-top:14px;padding:13px 15px;background:rgba(184,134,11,.07);border:1px solid rgba(184,134,11,.3);border-left:3px solid var(--gold);border-radius:0 3px 3px 0}
+.tcbox.vis{display:block;animation:fadeUp .3s ease both}
+.tcbox p{font-size:.95rem;line-height:1.75;font-style:italic}
+/* CORRECTION */
+.corr-card{padding:24px 22px 28px 68px;display:none}
+.corr-card.vis{display:block;animation:fadeUp .5s ease both}
+.srow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.sbox{background:white;border:1px solid var(--ruled);border-radius:3px;padding:11px 14px;text-align:center;flex:1;min-width:80px}
+.sn{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;line-height:1}
+.sn.good{color:var(--green)}.sn.avg{color:var(--gold)}.sn.bad{color:var(--red)}
+.sl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a5e;margin-top:3px}
+.fti{font-family:'Playfair Display',serif;font-size:.97rem;color:var(--ink);margin:16px 0 10px;font-weight:700;display:flex;align-items:center;gap:8px}
+.fti::after{content:'';flex:1;height:1px;background:var(--ruled)}
+.fi{background:white;border:1px solid var(--ruled);border-left:3px solid var(--red);border-radius:0 3px 3px 0;padding:11px 13px;margin-bottom:9px;animation:fadeUp .3s ease both}
+.fw{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--red);text-decoration:line-through;margin-bottom:3px}
+.fc{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--green);margin-bottom:7px}
+.fc::before{content:'✓ '}
+.fex{font-size:.88rem;line-height:1.5;border-top:1px solid var(--paper-dark);padding-top:7px;margin-top:5px}
+.nof{background:rgba(30,107,58,.08);border:1px solid rgba(30,107,58,.25);border-left:3px solid var(--green);border-radius:0 3px 3px 0;padding:13px 15px;color:var(--green);font-style:italic;font-size:.93rem}
+.loading-ia{display:flex;align-items:center;gap:11px;padding:14px 0}
+.dots span{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);animation:bounce 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+/* BADGE */
+.nbadge{display:inline-block;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 7px;border-radius:2px;margin-bottom:4px}
+.nb-deb{background:rgba(46,125,90,.12);color:var(--deb);border:1px solid var(--deb)}
+.nb-int{background:rgba(26,58,107,.1);color:var(--int);border:1px solid var(--int)}
+.nb-avx{background:rgba(139,26,26,.1);color:var(--avx);border:1px solid var(--avx)}
+.dhead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px}
+.dhead h2{font-family:'Playfair Display',serif;font-size:1.15rem;font-style:italic;color:var(--blue)}
+.btn-back{background:none;border:1px solid var(--ruled);padding:6px 12px;border-radius:2px;cursor:pointer;font-family:'Crimson Pro',serif;font-size:.8rem;color:#6b5e47;transition:all .2s;white-space:nowrap}
+.btn-back:hover{border-color:var(--ink);color:var(--ink)}
+/* CFG */
+.cfg{padding:14px 22px 14px 68px;background:rgba(26,58,107,.03);border-top:1px solid var(--ruled);font-size:.8rem;color:#8a7a5e}
+.cfg summary{cursor:pointer;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);outline:none;margin-bottom:10px}
+.cfg input{width:100%;padding:8px 10px;border:1px solid var(--ruled);border-radius:2px;font-family:'DM Mono',monospace;font-size:.73rem;color:var(--ink);background:white;margin-top:6px;outline:none}
+
+/* ═══════════ ADMIN ═══════════ */
+.admin-banner{background:linear-gradient(135deg,#3d1a6b,var(--admin));max-width:720px;margin:0 auto 18px;border-radius:3px;padding:14px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(91,45,142,.3)}
+.ab-icon{font-size:1.6rem}
+.ab-text h3{font-family:'Playfair Display',serif;color:white;font-size:1rem;font-weight:700}
+.ab-text p{font-size:.8rem;color:rgba(255,255,255,.75);font-style:italic;margin-top:2px}
+/* WIZARD PROGRESS */
+.wprog{max-width:720px;margin:0 auto 18px;display:flex;align-items:flex-start}
+.wps{flex:1;text-align:center;position:relative}
+.wps::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--ruled);z-index:0}
+.wps:last-child::after{display:none}
+.wpd{width:28px;height:28px;border-radius:50%;border:2px solid var(--ruled);background:var(--paper);font-family:'DM Mono',monospace;font-size:.72rem;display:flex;align-items:center;justify-content:center;margin:0 auto 5px;position:relative;z-index:1;transition:all .3s}
+.wpd.done{background:var(--admin);border-color:var(--admin);color:white}
+.wpd.active{background:white;border-color:var(--admin);color:var(--admin);font-weight:700;box-shadow:0 0 0 3px rgba(91,45,142,.15)}
+.wpl{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.5px;text-transform:uppercase;color:#8a7a5e}
+.wpl.active{color:var(--admin)}
+/* STEP */
+.step-hint{background:rgba(91,45,142,.06);border:1px solid rgba(91,45,142,.2);border-left:3px solid var(--admin);border-radius:0 3px 3px 0;padding:11px 14px;margin-bottom:16px;font-size:.88rem;line-height:1.6;color:var(--ink)}
+.step-hint strong{color:var(--admin)}
+.step-hint code{background:rgba(91,45,142,.1);padding:1px 5px;border-radius:2px;font-family:'DM Mono',monospace;font-size:.76rem}
+/* INPUTS */
+.ain{width:100%;padding:10px 12px;border:1.5px solid var(--ruled);border-radius:3px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);background:white;outline:none;transition:border-color .2s;margin-bottom:4px}
+.ain:focus{border-color:var(--admin)}
+.ata{width:100%;padding:10px 12px;border:1.5px solid var(--ruled);border-radius:3px;font-family:'Crimson Pro',serif;font-size:.95rem;color:var(--ink);background:white;outline:none;resize:vertical;min-height:110px;line-height:1.6;transition:border-color .2s}
+.ata:focus{border-color:var(--admin)}
+.fl{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--admin);margin-bottom:5px;margin-top:12px}
+/* PHRASES */
+.prow{display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--ruled);border-radius:3px;padding:9px 11px;margin-bottom:7px}
+.pr-num{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--gold);min-width:22px}
+.pr-text{flex:1;font-size:.88rem;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-del{background:none;border:none;cursor:pointer;color:var(--red);font-size:1rem;padding:2px 6px;border-radius:2px}
+.pr-del:hover{background:rgba(192,57,43,.1)}
+/* PREVIEW LIST */
+.pd{background:white;border:1px solid var(--ruled);border-radius:3px;padding:12px 14px;margin-bottom:9px;display:flex;align-items:center;gap:10px}
+.pdb{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:2px}
+.pdb.deb{background:rgba(46,125,90,.12);color:var(--deb);border:1px solid var(--deb)}
+.pdb.int{background:rgba(26,58,107,.1);color:var(--int);border:1px solid var(--int)}
+.pdb.avx{background:rgba(139,26,26,.1);color:var(--avx);border:1px solid var(--avx)}
+.pd-ti{flex:1;font-family:'Playfair Display',serif;font-size:.9rem;font-style:italic}
+.pd-del{background:none;border:none;cursor:pointer;color:var(--red);font-size:.8rem;font-family:'DM Mono',monospace;padding:4px 8px;border:1px solid transparent;border-radius:2px;transition:all .2s}
+.pd-del:hover{border-color:var(--red);background:rgba(192,57,43,.07)}
+/* JSON OUTPUT */
+.jow{position:relative;margin-top:14px}
+.json-out{width:100%;min-height:180px;padding:13px;background:#1a1209;color:#a8d5a2;font-family:'DM Mono',monospace;font-size:.72rem;line-height:1.6;border:none;border-radius:3px;resize:vertical;outline:none}
+.btn-copy{position:absolute;top:10px;right:10px;background:var(--admin);color:white;border:none;border-radius:3px;padding:6px 12px;cursor:pointer;font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:1px;transition:all .2s}
+.btn-copy:hover{background:#3d1a6b}
+.copy-ok{color:var(--green);font-family:'DM Mono',monospace;font-size:.78rem;margin-top:6px;display:none}
+/* GITHUB STEPS */
+.gsteps{background:rgba(91,45,142,.05);border:1px solid rgba(91,45,142,.2);border-radius:3px;padding:15px 16px;margin-top:14px}
+.gst{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--admin);margin-bottom:12px}
+.gs{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;font-size:.88rem}
+.gsn{background:var(--admin);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.7rem;flex-shrink:0;margin-top:1px}
+.gst2{line-height:1.5}.gst2 code{background:rgba(91,45,142,.1);padding:1px 5px;border-radius:2px;font-family:'DM Mono',monospace;font-size:.76rem}
+/* ADMIN BTNS */
+.btn-ap2{padding:10px 20px;background:var(--admin);color:white;border:none;border-radius:3px;cursor:pointer;font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;transition:all .2s}
+.btn-ap2:hover{background:#3d1a6b;transform:translateY(-1px)}
+.btn-as{padding:10px 16px;background:transparent;color:var(--admin);border:1.5px solid var(--admin);border-radius:3px;cursor:pointer;font-family:'Crimson Pro',serif;font-size:.88rem;transition:all .2s}
+.btn-as:hover{background:var(--admin);color:white}
+/* AUTH */
+.auth-inner{padding:28px 22px 28px 68px}
+.auth-inner h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--admin);font-weight:700;margin-bottom:6px}
+.auth-inner p{font-size:.88rem;color:#6b5e47;font-style:italic;margin-bottom:16px}
+.arow2{display:flex;gap:10px}
+.pw-in{flex:1;padding:10px 12px;border:1.5px solid var(--ruled);border-radius:3px;font-size:1rem;outline:none;transition:border-color .2s;letter-spacing:3px}
+.pw-in:focus{border-color:var(--admin)}
+.auth-err{color:var(--red);font-size:.8rem;margin-top:7px;font-style:italic;display:none}
+/* EMPTY */
+.empty{text-align:center;padding:28px 18px;color:#8a7a5e;font-style:italic;font-size:.88rem}
+.footer{text-align:center;margin-top:28px;font-size:.72rem;color:#8a7a5e;font-style:italic}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+@media(max-width:480px){.card::before{left:36px}.inner,.auth-inner,.corr-card,.cfg{padding-left:46px}.level-btns,.abtns{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="app-logo">Atelier <em>Dictée</em></div>
+  <button class="btn-mode to-admin" id="btn-toggle" onclick="toggleMode()">⚙ Mode Admin</button>
+</div>
+
+<!-- ══════════ ÉLÈVE ══════════ -->
+<div id="app-eleve">
+  <div class="header">
+    <div class="hbadge">Préparation aux concours</div>
+    <h1>Atelier <em>Dictée</em></h1>
+    <p class="hsub">Entraînez-vous avec des dictées corrigées par l'intelligence artificielle</p>
+    <div class="hline"></div>
+  </div>
+  <div class="card" id="e-niveau"><div class="inner">
+    <div class="ml">Étape 1 — Choisir son niveau</div>
+    <div class="sh">Quel est votre niveau ?</div>
+    <div class="level-btns">
+      <button class="level-btn" data-l="debutant" onclick="selNiveau('debutant',this)"><span class="li">🌱</span><span class="ln">Débutant</span><span class="ld">Vocabulaire simple</span></button>
+      <button class="level-btn" data-l="intermediaire" onclick="selNiveau('intermediaire',this)"><span class="li">📚</span><span class="ln">Intermédiaire</span><span class="ld">Grammaire variée</span></button>
+      <button class="level-btn" data-l="avance" onclick="selNiveau('avance',this)"><span class="li">🏆</span><span class="ln">Avancé</span><span class="ld">Textes complexes</span></button>
+    </div>
+  </div></div>
+  <div class="card" id="e-liste" style="display:none"><div class="inner">
+    <div class="ml" id="liste-lbl">Étape 2 — Choisir une dictée</div>
+    <div id="liste-inner"></div>
+  </div></div>
+  <div class="card" id="e-dictee" style="display:none"><div class="inner">
+    <div class="dhead">
+      <div><div class="nbadge" id="e-badge"></div><h2 id="e-titre">—</h2></div>
+      <button class="btn-back" onclick="retourListe()">← Retour</button>
+    </div>
+    <div class="audio-box">
+      <div class="ml" style="margin-bottom:9px">🎧 Écoute de la dictée</div>
+      <div class="abtns">
+        <button class="btn-a btn-af" onclick="lireFull()"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Dictée complète</button>
+        <button class="btn-a btn-ap" onclick="togglePhrase()"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Phrase par phrase</button>
+      </div>
+      <div class="pnav" id="pnav">
+        <button class="btn-nav" id="btn-prev" onclick="navP(-1)">◀ Préc.</button>
+        <span class="pc" id="pctr">1 / ?</span>
+        <button class="btn-nav" id="btn-next" onclick="navP(1)">Suiv. ▶</button>
+        <button class="btn-nav" onclick="rejouer()">🔁</button>
+      </div>
+      <div class="ast" id="ast"></div>
+      <audio id="aud" onended="onEnd()"></audio>
+    </div>
+    <div class="ml">✏️ Votre cahier</div>
+    <div class="cw">
+      <textarea class="cahier" id="cahier" placeholder="Écrivez votre dictée ici…"
+        autocomplete="off" autocorrect="off" autocapitalize="off"
+        spellcheck="false" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false"></textarea>
+    </div>
+    <div class="arow">
+      <button class="btn-p" onclick="lancerCorr()">🔍 Corriger</button>
+      <button class="btn-s" onclick="reinit()">↺ Recommencer</button>
+      <button class="btn-g" onclick="toggleTC()">👁 Voir le texte</button>
+    </div>
+    <div class="tcbox" id="tcbox"><div class="ml">📄 Texte officiel</div><p id="tc-p"></p></div>
+  </div></div>
+  <div class="card corr-card" id="e-corr">
+    <div class="ml" style="color:var(--red)">Rapport de correction</div>
+    <div style="font-size:.83rem;color:#6b5e47;font-style:italic;margin-bottom:18px" id="corr-meta">—</div>
+    <div id="corr-content"><div class="loading-ia"><div class="dots"><span></span><span></span><span></span></div><span style="font-style:italic;color:var(--blue);font-size:.93rem">Analyse en cours…</span></div></div>
+  </div>
+  <div class="card"><div class="cfg"><details><summary>⚙ URL du fichier JSON GitHub</summary><p style="margin-top:10px;margin-bottom:4px">URL raw de votre <code>dictees.json</code> :</p><input type="url" id="json-url" placeholder="https://raw.githubusercontent.com/…/dictees.json" oninput="saveConfig()"></details></div></div>
+</div>
+
+<!-- ══════════ ADMIN ══════════ -->
+<div id="app-admin" style="display:none">
+  <!-- AUTH -->
+  <div class="card" id="adm-auth"><div class="auth-inner">
+    <h2>🔐 Accès Administrateur</h2>
+    <p>Entrez le mot de passe pour accéder au configurateur.</p>
+    <div class="arow2">
+      <input class="pw-in" type="password" id="adm-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPw()">
+      <button class="btn-ap2" onclick="checkPw()">Entrer</button>
+    </div>
+    <p class="auth-err" id="auth-err">❌ Mot de passe incorrect.</p>
+    <p style="margin-top:12px;font-size:.75rem;color:#aaa;font-style:italic">Mot de passe par défaut : <strong>admin123</strong> (modifiable dans le code, ligne ADMIN_PW)</p>
+  </div></div>
+
+  <!-- WORKSPACE -->
+  <div id="adm-ws" style="display:none">
+    <div class="admin-banner">
+      <div class="ab-icon">⚙️</div>
+      <div class="ab-text"><h3>Mode Administration</h3><p>Ajoutez et gérez vos dictées étape par étape</p></div>
+    </div>
+
+    <!-- HOME -->
+    <div id="adm-home">
+      <div class="card"><div class="inner">
+        <div class="ml">Vos dictées enregistrées</div>
+        <div id="adm-list"></div>
+        <div class="arow" style="margin-top:16px">
+          <button class="btn-ap2" onclick="startWiz()">➕ Ajouter une dictée</button>
+          <button class="btn-as" onclick="showExport()">📋 Générer le JSON</button>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- WIZARD -->
+    <div id="adm-wiz" style="display:none">
+      <div class="wprog" id="wprog"></div>
+      <div class="card"><div class="inner" id="wiz-inner"></div></div>
+    </div>
+
+    <!-- EXPORT -->
+    <div id="adm-export" style="display:none">
+      <div class="card"><div class="inner">
+        <div class="ml">Fichier prêt à déployer</div>
+        <div class="sh" style="color:var(--admin)">📋 Copiez ce JSON et collez-le sur GitHub</div>
+        <div class="jow">
+          <textarea class="json-out" id="json-final" readonly></textarea>
+          <button class="btn-copy" onclick="copyJSON()">Copier</button>
+        </div>
+        <div class="copy-ok" id="copy-ok">✅ Copié dans le presse-papier !</div>
+        <div class="gsteps">
+          <div class="gst">Comment mettre ça sur GitHub ?</div>
+          <div class="gs"><div class="gsn">1</div><div class="gst2">Va sur ton dépôt GitHub, ouvre le fichier <code>dictees.json</code> (ou crée-le)</div></div>
+          <div class="gs"><div class="gsn">2</div><div class="gst2">Clique sur le crayon ✏️ pour modifier</div></div>
+          <div class="gs"><div class="gsn">3</div><div class="gst2">Sélectionne tout (<code>Ctrl+A</code>) puis colle le JSON copié (<code>Ctrl+V</code>)</div></div>
+          <div class="gs"><div class="gsn">4</div><div class="gst2">Clique sur <strong>Commit changes</strong> (bouton vert en bas)</div></div>
+          <div class="gs"><div class="gsn">5</div><div class="gst2">Clique sur <strong>⟳ Recharger</strong> ci-dessous pour que le site prenne en compte les nouvelles dictées</div></div>
+        </div>
+        <div class="arow" style="margin-top:14px">
+          <button class="btn-as" onclick="showAdmHome()">← Retour</button>
+          <button class="btn-ap2" onclick="reloadDictees()">⟳ Recharger depuis GitHub</button>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<p class="footer">Atelier Dictée — Outil de préparation aux concours</p>
+
+<script>
+// ─── CONFIG ───
+const ADMIN_PW = 'admin123'; // ← Changez ce mot de passe ici
+const JSON_KEY = 'atelier_json_url';
+const DATA_KEY = 'atelier_data';
+
+// ─── STATE ───
+let allDictees = [];
+let niveauActif = null;
+let dicteeActive = null;
+let phraseMode = false;
+let phraseIdx = 0;
+let tcVis = false;
+let modeAdmin = false;
+let wizData = {};
+let wizStep = 0;
+
+// ─── INIT ───
+window.addEventListener('DOMContentLoaded', () => {
+  const url = localStorage.getItem(JSON_KEY)||'';
+  const el = document.getElementById('json-url');
+  if(el) el.value = url;
+  const stored = localStorage.getItem(DATA_KEY);
+  if(stored) try{allDictees=JSON.parse(stored);}catch(e){}
+  if(url) fetchDictees(url);
+});
+
+function saveConfig(){
+  const url = document.getElementById('json-url').value.trim();
+  localStorage.setItem(JSON_KEY, url);
+  if(url) fetchDictees(url);
+}
+
+async function fetchDictees(url){
+  try{
+    const r = await fetch(url+'?t='+Date.now());
+    const d = await r.json();
+    allDictees = d.dictees||[];
+    localStorage.setItem(DATA_KEY, JSON.stringify(allDictees));
+    if(niveauActif) afficherListe(niveauActif);
+    renderAdmList();
+  }catch(e){console.warn('JSON fetch:',e);}
+}
+
+async function reloadDictees(){
+  const url = localStorage.getItem(JSON_KEY)||'';
+  if(!url){alert('Configurez d\'abord l\'URL JSON dans le bas de page.');return;}
+  await fetchDictees(url);
+  alert('✅ Dictées rechargées depuis GitHub !');
+}
+
+// ─── MODE TOGGLE ───
+function toggleMode(){
+  modeAdmin = !modeAdmin;
+  const btn = document.getElementById('btn-toggle');
+  document.getElementById('app-eleve').style.display = modeAdmin?'none':'block';
+  document.getElementById('app-admin').style.display = modeAdmin?'block':'none';
+  btn.textContent = modeAdmin?'← Mode Élève':'⚙ Mode Admin';
+  btn.className = modeAdmin?'btn-mode to-eleve':'btn-mode to-admin';
+}
+
+// ─── AUTH ───
+function checkPw(){
+  if(document.getElementById('adm-pw').value===ADMIN_PW){
+    document.getElementById('adm-auth').style.display='none';
+    document.getElementById('adm-ws').style.display='block';
+    renderAdmList();
+  }else{
+    document.getElementById('auth-err').style.display='block';
+  }
+}
+
+// ─── ADMIN HOME ───
+function showAdmHome(){
+  $('adm-home').style.display='block';
+  $('adm-wiz').style.display='none';
+  $('adm-export').style.display='none';
+  renderAdmList();
+}
+
+function renderAdmList(){
+  const el = $('adm-list');
+  if(!el) return;
+  if(!allDictees.length){
+    el.innerHTML='<div class="empty">Aucune dictée pour l\'instant.<br>Cliquez sur « Ajouter une dictée ».</div>';
+    return;
+  }
+  const bc={debutant:'deb',intermediaire:'int',avance:'avx'};
+  const bl={debutant:'Débutant',intermediaire:'Intermédiaire',avance:'Avancé'};
+  el.innerHTML = allDictees.map((d,i)=>`
+    <div class="pd">
+      <span class="pdb ${bc[d.niveau]||'deb'}">${bl[d.niveau]||d.niveau}</span>
+      <span class="pd-ti">${esc(d.titre)}</span>
+      <button class="pd-del" onclick="delDictee(${i})">✕ Suppr.</button>
+    </div>`).join('');
+}
+
+function delDictee(i){
+  if(!confirm(`Supprimer « ${allDictees[i].titre} » ?`)) return;
+  allDictees.splice(i,1);
+  localStorage.setItem(DATA_KEY,JSON.stringify(allDictees));
+  renderAdmList();
+}
+
+// ─── WIZARD ───
+function startWiz(){
+  wizData={niveau:'',titre:'',audio_complet:'',texte_complet:'',phrases:[],np:{texte:'',audio:''}};
+  wizStep=0;
+  $('adm-home').style.display='none';
+  $('adm-wiz').style.display='block';
+  $('adm-export').style.display='none';
+  renderWiz();
+}
+
+const WIZ_LABELS=['Niveau','Titre','Audio','Texte','Phrases','Récap'];
+
+function renderWizProg(){
+  $('wprog').innerHTML = WIZ_LABELS.map((l,i)=>`
+    <div class="wps">
+      <div class="wpd ${i<wizStep?'done':i===wizStep?'active':''}">${i<wizStep?'✓':i+1}</div>
+      <div class="wpl ${i===wizStep?'active':''}">${l}</div>
+    </div>`).join('');
+}
+
+function renderWiz(){
+  renderWizProg();
+  const inn = $('wiz-inner');
+
+  if(wizStep===0){
+    inn.innerHTML=`
+      <div class="ml">Étape 1 / 6</div>
+      <div class="sh">Niveau de la dictée ?</div>
+      <div class="step-hint">Choisissez le niveau adapté aux élèves qui passeront cet exercice.</div>
+      <div class="level-btns" style="margin-bottom:18px">
+        <button class="level-btn ${wizData.niveau==='debutant'?'active':''}" data-l="debutant" onclick="wizNiveau('debutant',this)"><span class="li">🌱</span><span class="ln">Débutant</span><span class="ld">Vocabulaire simple</span></button>
+        <button class="level-btn ${wizData.niveau==='intermediaire'?'active':''}" data-l="intermediaire" onclick="wizNiveau('intermediaire',this)"><span class="li">📚</span><span class="ln">Intermédiaire</span><span class="ld">Grammaire variée</span></button>
+        <button class="level-btn ${wizData.niveau==='avance'?'active':''}" data-l="avance" onclick="wizNiveau('avance',this)"><span class="li">🏆</span><span class="ln">Avancé</span><span class="ld">Textes complexes</span></button>
+      </div>
+      <div class="arow">
+        <button class="btn-as" onclick="showAdmHome()">✕ Annuler</button>
+        <button class="btn-ap2" id="wbn" onclick="wizNext()" ${!wizData.niveau?'disabled':''}>Suivant →</button>
+      </div>`;
+
+  }else if(wizStep===1){
+    inn.innerHTML=`
+      <div class="ml">Étape 2 / 6</div>
+      <div class="sh">Titre de la dictée</div>
+      <div class="step-hint">Ce titre sera visible par les élèves.<br><strong>Exemple :</strong> <em>La ferme au printemps</em>, <em>Le voyage de Moussa</em></div>
+      <div class="fl">Titre</div>
+      <input class="ain" id="w-titre" type="text" placeholder="Entrez le titre de la dictée…" value="${esc(wizData.titre)}" oninput="wizData.titre=this.value">
+      <div class="arow" style="margin-top:18px">
+        <button class="btn-as" onclick="wizBack()">← Retour</button>
+        <button class="btn-ap2" onclick="wizNext()">Suivant →</button>
+      </div>`;
+    setTimeout(()=>$('w-titre')?.focus(),80);
+
+  }else if(wizStep===2){
+    inn.innerHTML=`
+      <div class="ml">Étape 3 / 6</div>
+      <div class="sh">Audio — Dictée complète</div>
+      <div class="step-hint">
+        <strong>Comment obtenir l'URL audio ?</strong><br>
+        1. Enregistrez l'audio sur votre téléphone (application Enregistreur vocal ou similaire)<br>
+        2. Uploadez le fichier <code>.mp3</code> dans votre dépôt GitHub, dans un dossier nommé <code>audio/</code><br>
+        3. Cliquez sur le fichier dans GitHub → cliquez sur <strong>Raw</strong> → copiez l'URL complète de la barre d'adresse<br>
+        4. Collez cette URL dans le champ ci-dessous
+      </div>
+      <div class="fl">URL de l'audio complet (coller ici)</div>
+      <input class="ain" id="w-audio" type="url" placeholder="https://raw.githubusercontent.com/…/audio/dictee_01.mp3" value="${esc(wizData.audio_complet)}" oninput="wizData.audio_complet=this.value">
+      <p style="font-size:.76rem;color:#8a7a5e;font-style:italic;margin-top:6px">Vous pouvez laisser vide si l'audio n'est pas encore prêt.</p>
+      <div class="arow" style="margin-top:18px">
+        <button class="btn-as" onclick="wizBack()">← Retour</button>
+        <button class="btn-ap2" onclick="wizNext()">Suivant →</button>
+      </div>`;
+    setTimeout(()=>$('w-audio')?.focus(),80);
+
+  }else if(wizStep===3){
+    inn.innerHTML=`
+      <div class="ml">Étape 4 / 6</div>
+      <div class="sh">Texte officiel de la dictée</div>
+      <div class="step-hint">
+        C'est le texte <strong>correct et officiel</strong>. Il ne sera <strong>pas visible</strong> par les élèves.<br>
+        Il servira à l'IA pour corriger les copies. Collez ou tapez le texte exact ci-dessous.
+      </div>
+      <div class="fl">Texte complet (coller ici)</div>
+      <textarea class="ata" id="w-texte" placeholder="Collez ou tapez le texte complet ici…" oninput="wizData.texte_complet=this.value">${esc(wizData.texte_complet)}</textarea>
+      <div class="arow" style="margin-top:14px">
+        <button class="btn-as" onclick="wizBack()">← Retour</button>
+        <button class="btn-ap2" onclick="wizNext()">Suivant →</button>
+      </div>`;
+    setTimeout(()=>$('w-texte')?.focus(),80);
+
+  }else if(wizStep===4){
+    const ps = wizData.phrases;
+    inn.innerHTML=`
+      <div class="ml">Étape 5 / 6</div>
+      <div class="sh">Phrases avec audio individuel</div>
+      <div class="step-hint">
+        Si vous avez enregistré <strong>chaque phrase séparément</strong>, ajoutez-les ici une par une.<br>
+        Sinon, laissez vide et cliquez sur <strong>Terminer ✓</strong>.
+      </div>
+      <div id="plist">
+        ${ps.length?ps.map((p,i)=>`
+          <div class="prow">
+            <span class="pr-num">${i+1}.</span>
+            <span class="pr-text">${esc(p.texte)}</span>
+            <button class="pr-del" onclick="delP(${i})">✕</button>
+          </div>`).join('')
+        :'<p style="font-size:.8rem;color:#aaa;font-style:italic;margin-bottom:10px">Aucune phrase ajoutée.</p>'}
+      </div>
+      <div style="background:rgba(91,45,142,.05);border:1px solid rgba(91,45,142,.2);border-radius:3px;padding:13px 14px;margin-bottom:14px">
+        <div class="fl">Texte de la phrase ${ps.length+1}</div>
+        <input class="ain" id="np-t" type="text" placeholder="Ex : La vache broute dans le pré." value="${esc(wizData.np.texte)}" oninput="wizData.np.texte=this.value" style="margin-bottom:8px">
+        <div class="fl">URL audio de cette phrase (facultatif)</div>
+        <input class="ain" id="np-a" type="url" placeholder="https://raw.githubusercontent.com/…/p${ps.length+1}.mp3" value="${esc(wizData.np.audio)}" oninput="wizData.np.audio=this.value">
+        <div style="margin-top:10px"><button class="btn-as" onclick="ajouterP()">➕ Ajouter cette phrase</button></div>
+      </div>
+      <div class="arow">
+        <button class="btn-as" onclick="wizBack()">← Retour</button>
+        <button class="btn-ap2" onclick="wizNext()">Terminer ✓</button>
+      </div>`;
+
+  }else if(wizStep===5){
+    const nlb={debutant:'🌱 Débutant',intermediaire:'📚 Intermédiaire',avance:'🏆 Avancé'};
+    inn.innerHTML=`
+      <div class="ml">Étape 6 / 6 — Récapitulatif</div>
+      <div class="sh" style="color:var(--admin)">Vérifiez avant d'enregistrer</div>
+      <table style="width:100%;border-collapse:collapse;font-size:.88rem;margin-bottom:16px">
+        <tr><td style="padding:7px 0;border-bottom:1px solid var(--ruled);color:#8a7a5e;width:38%">Niveau</td><td style="padding:7px 0;border-bottom:1px solid var(--ruled);font-weight:600">${nlb[wizData.niveau]||wizData.niveau}</td></tr>
+        <tr><td style="padding:7px 0;border-bottom:1px solid var(--ruled);color:#8a7a5e">Titre</td><td style="padding:7px 0;border-bottom:1px solid var(--ruled);font-style:italic;font-family:'Playfair Display',serif">${esc(wizData.titre||'—')}</td></tr>
+        <tr><td style="padding:7px 0;border-bottom:1px solid var(--ruled);color:#8a7a5e">Audio complet</td><td style="padding:7px 0;border-bottom:1px solid var(--ruled)">${wizData.audio_complet?'✅ Oui':'⚠️ Non renseigné'}</td></tr>
+        <tr><td style="padding:7px 0;border-bottom:1px solid var(--ruled);color:#8a7a5e">Texte</td><td style="padding:7px 0;border-bottom:1px solid var(--ruled)">${wizData.texte_complet?'✅ '+wizData.texte_complet.trim().split(/\s+/).length+' mots':'⚠️ Non renseigné'}</td></tr>
+        <tr><td style="padding:7px 0;color:#8a7a5e">Phrases audio</td><td style="padding:7px 0">${wizData.phrases.length} phrase(s) enregistrée(s)</td></tr>
+      </table>
+      <div class="arow">
+        <button class="btn-as" onclick="wizBack()">← Modifier</button>
+        <button class="btn-ap2" onclick="saveWiz()">✅ Enregistrer cette dictée</button>
+      </div>`;
+  }
+}
+
+function wizNiveau(n,btn){
+  wizData.niveau=n;
+  document.querySelectorAll('#wiz-inner .level-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const wb=$('wbn');if(wb)wb.disabled=false;
+}
+
+function wizNext(){
+  if(wizStep===0&&!wizData.niveau){alert('Choisissez un niveau.');return;}
+  if(wizStep===1&&!wizData.titre.trim()){alert('Entrez un titre.');return;}
+  if(wizStep===3&&!wizData.texte_complet.trim()){alert('Entrez le texte de la dictée.');return;}
+  wizStep=Math.min(5,wizStep+1);
+  renderWiz();
+  $('adm-wiz').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function wizBack(){wizStep=Math.max(0,wizStep-1);renderWiz();}
+
+function ajouterP(){
+  const t=wizData.np.texte.trim();
+  if(!t){alert('Entrez le texte de la phrase.');return;}
+  wizData.phrases.push({texte:t,audio:wizData.np.audio.trim()});
+  wizData.np={texte:'',audio:''};
+  renderWiz();
+}
+
+function delP(i){wizData.phrases.splice(i,1);renderWiz();}
+
+function saveWiz(){
+  if(!wizData.titre.trim()||!wizData.texte_complet.trim()){alert('Le titre et le texte sont obligatoires.');return;}
+  allDictees.push({
+    id:wizData.niveau+'_'+Date.now(),
+    niveau:wizData.niveau,
+    titre:wizData.titre.trim(),
+    audio_complet:wizData.audio_complet.trim(),
+    texte_complet:wizData.texte_complet.trim(),
+    phrases:wizData.phrases.map(p=>({texte:p.texte,audio:p.audio}))
+  });
+  localStorage.setItem(DATA_KEY,JSON.stringify(allDictees));
+  $('adm-wiz').style.display='none';
+  showAdmHome();
+  alert(`✅ Dictée « ${wizData.titre} » enregistrée !\nN'oubliez pas de générer le JSON et de le mettre sur GitHub.`);
+}
+
+// ─── EXPORT ───
+function showExport(){
+  $('adm-home').style.display='none';
+  $('adm-wiz').style.display='none';
+  $('adm-export').style.display='block';
+  $('json-final').value=JSON.stringify({dictees:allDictees},null,2);
+  $('copy-ok').style.display='none';
+  $('adm-export').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copyJSON(){
+  const ta=$('json-final');
+  ta.select();ta.setSelectionRange(0,99999);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(ta.value).then(()=>$('copy-ok').style.display='block');
+  }else{
+    document.execCommand('copy');
+    $('copy-ok').style.display='block';
+  }
+}
+
+// ─── ÉLÈVE: NIVEAU ───
+function selNiveau(n,btn){
+  niveauActif=n;
+  document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  afficherListe(n);
+}
+
+function afficherListe(n){
+  const f=allDictees.filter(d=>d.niveau===n);
+  const lbl={debutant:'Débutant',intermediaire:'Intermédiaire',avance:'Avancé'};
+  $('liste-lbl').textContent=`Étape 2 — Dictées niveau ${lbl[n]}`;
+  const inn=$('liste-inner');
+  if(!f.length){inn.innerHTML='<div class="empty">Aucune dictée pour ce niveau.</div>';}
+  else{inn.innerHTML=f.map((d,i)=>`
+    <div class="di" onclick="ouvrirDictee('${d.id}')">
+      <span class="di-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="di-ti">${esc(d.titre)}</span>
+      <span class="di-arr">→</span>
+    </div>`).join('');}
+  show('e-liste');hide('e-dictee');hide('e-corr');
+}
+
+// ─── ÉLÈVE: DICTÉE ───
+function ouvrirDictee(id){
+  dicteeActive=allDictees.find(d=>d.id===id);
+  if(!dicteeActive)return;
+  phraseMode=false;phraseIdx=0;tcVis=false;
+  const bc={debutant:'nb-deb',intermediaire:'nb-int',avance:'nb-avx'};
+  const bl={debutant:'Débutant',intermediaire:'Intermédiaire',avance:'Avancé'};
+  const b=$('e-badge');
+  b.textContent=bl[dicteeActive.niveau]||dicteeActive.niveau;
+  b.className='nbadge '+(bc[dicteeActive.niveau]||'nb-deb');
+  $('e-titre').textContent=dicteeActive.titre;
+  $('cahier').value='';
+  $('ast').textContent='';
+  $('tcbox').classList.remove('vis');
+  $('tc-p').textContent=dicteeActive.texte_complet||'';
+  $('pnav').classList.remove('vis');
+  stopAud();
+  show('e-dictee');hide('e-corr');
+  $('e-dictee').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function retourListe(){
+  stopAud();hide('e-dictee');hide('e-corr');
+  if(niveauActif)afficherListe(niveauActif);
+}
+
+// ─── AUDIO ───
+function lireFull(){
+  if(!dicteeActive?.audio_complet){setSt('❌ Aucun audio disponible.');return;}
+  phraseMode=false;$('pnav').classList.remove('vis');
+  playA(dicteeActive.audio_complet,'▶ Lecture de la dictée complète…');
+}
+function togglePhrase(){
+  if(!dicteeActive?.phrases?.length){setSt('❌ Aucune phrase audio disponible.');return;}
+  phraseMode=true;phraseIdx=0;$('pnav').classList.add('vis');
+  updatePC();jouerP();
+}
+function jouerP(){
+  const p=dicteeActive.phrases[phraseIdx];
+  if(!p?.audio){setSt('❌ Pas d\'audio pour cette phrase.');return;}
+  playA(p.audio,`▶ Phrase ${phraseIdx+1} / ${dicteeActive.phrases.length}`);
+  updatePC();
+}
+function rejouer(){if(phraseMode)jouerP();}
+function navP(d){
+  const tot=dicteeActive?.phrases?.length||0;
+  phraseIdx=Math.max(0,Math.min(tot-1,phraseIdx+d));
+  jouerP();
+}
+function updatePC(){
+  const tot=dicteeActive?.phrases?.length||0;
+  $('pctr').textContent=`${phraseIdx+1} / ${tot}`;
+  $('btn-prev').disabled=phraseIdx===0;
+  $('btn-next').disabled=phraseIdx>=tot-1;
+}
+function playA(url,msg){
+  const a=$('aud');a.src=url;
+  a.play().then(()=>setSt(msg)).catch(e=>setSt('❌ Erreur audio: '+e.message));
+}
+function stopAud(){const a=$('aud');a.pause();a.src='';}
+function onEnd(){
+  setSt('✅ Lecture terminée.');
+  if(phraseMode&&phraseIdx<(dicteeActive?.phrases?.length||0)-1)
+    setSt('⏸ Cliquez sur « Suiv. » pour continuer.');
+}
+function setSt(m){$('ast').textContent=m;}
+
+// ─── TEXTE & REINIT ───
+function toggleTC(){tcVis=!tcVis;$('tcbox').classList.toggle('vis',tcVis);}
+function reinit(){
+  $('cahier').value='';
+  $('tcbox').classList.remove('vis');tcVis=false;
+  stopAud();setSt('');phraseMode=false;phraseIdx=0;
+  $('pnav').classList.remove('vis');
+  hide('e-corr');
+}
+
+// ─── CORRECTION IA ───
+async function lancerCorr(){
+  const cand=$('cahier').value.trim();
+  const orig=dicteeActive?.texte_complet?.trim();
+  if(!cand){alert('Écrivez d\'abord votre dictée.');return;}
+  if(!orig){alert('Texte officiel introuvable pour cette dictée.');return;}
+
+  const ec=$('e-corr');
+  ec.className='card corr-card vis';
+  $('corr-meta').textContent=`Dictée : « ${dicteeActive.titre} »`;
+  $('corr-content').innerHTML=`<div class="loading-ia"><div class="dots"><span></span><span></span><span></span></div><span style="font-style:italic;color:var(--blue);font-size:.93rem">L'intelligence artificielle analyse votre texte…</span></div>`;
+  ec.scrollIntoView({behavior:'smooth'});
+
+  const prompt=`Tu es un professeur de français expert en correction de dictées.
+
+TEXTE OFFICIEL :
+"""
+${orig}
+"""
+
+TEXTE DE L'ÉLÈVE :
+"""
+${cand}
+"""
+
+Compare les deux textes mot par mot. Identifie toutes les erreurs : orthographe, grammaire, accords, conjugaison, ponctuation, majuscules, mots manquants ou en trop.
+
+Réponds UNIQUEMENT avec un objet JSON valide (sans backticks, sans texte autour) :
+{
+  "nb_mots": <nombre de mots du texte officiel>,
+  "nb_fautes": <nombre total de fautes>,
+  "note": "<note sur 20, ex: 16/20>",
+  "appreciation": "<appréciation globale en 1 phrase>",
+  "fautes": [
+    { "ecrit": "<ce que l'élève a écrit>", "attendu": "<ce qui était attendu>", "explication": "<règle ou explication pédagogique courte>" }
+  ]
+}`;
+
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const data=await res.json();
+    const raw=data.content?.map(i=>i.text||'').join('')||'';
+    const r=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    afficherCorr(r);
+  }catch(e){
+    $('corr-content').innerHTML=`<div style="color:var(--red);font-style:italic;font-size:.88rem;padding:12px 0">❌ Erreur : ${esc(String(e.message))}</div>`;
+  }
+}
+
+function afficherCorr(r){
+  const n=parseInt(r.note)||0;
+  const nc=n>=16?'good':n>=10?'avg':'bad';
+  let fh='';
+  if(!r.fautes?.length){
+    fh=`<div class="nof">🎉 Félicitations ! Aucune faute détectée. Dictée parfaite !</div>`;
+  }else{
+    fh=r.fautes.map((f,i)=>`
+      <div class="fi" style="animation-delay:${i*.06}s">
+        <div class="fw">✗ ${esc(f.ecrit||'—')}</div>
+        <div class="fc">${esc(f.attendu||'—')}</div>
+        <div class="fex">${esc(f.explication||'')}</div>
+      </div>`).join('');
+  }
+  $('corr-content').innerHTML=`
+    <div class="srow">
+      <div class="sbox"><div class="sn ${nc}">${esc(r.note||'—')}</div><div class="sl">Note</div></div>
+      <div class="sbox"><div class="sn ${r.nb_fautes===0?'good':'bad'}">${r.nb_fautes??'—'}</div><div class="sl">Fautes</div></div>
+      <div class="sbox"><div class="sn avg">${r.nb_mots??'—'}</div><div class="sl">Mots</div></div>
+    </div>
+    ${r.appreciation?`<p style="font-style:italic;margin-bottom:14px;color:#3a3020;font-size:.93rem">"${esc(r.appreciation)}"</p>`:''}
+    <div class="fti">Détail des fautes</div>
+    ${fh}
+    <div style="margin-top:18px"><button class="btn-s" onclick="reinit()">↺ Nouvelle tentative</button></div>`;
+}
+
+// ─── UTILS ───
+const $=id=>document.getElementById(id);
+function show(id){$(id).style.display='block';}
+function hide(id){$(id).style.display='none';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
