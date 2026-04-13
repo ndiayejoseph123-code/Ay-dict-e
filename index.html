@@ -699,10 +699,17 @@ function parlePonctuation(texte) {
 let audioEnCours = null;
 
 async function lireTTS(index, btn) {
-  // Arrêt si lecture en cours
+  const vitesse = parseFloat(document.getElementById("vitesse-tts").value);
+
+  // Arrêt si lecture en cours (audio Google TTS ou voix navigateur)
   if (audioEnCours && !audioEnCours.paused) {
     audioEnCours.pause();
     audioEnCours = null;
+    document.querySelectorAll(".play-btn").forEach(b => b.textContent = "▶");
+    return;
+  }
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
     document.querySelectorAll(".play-btn").forEach(b => b.textContent = "▶");
     return;
   }
@@ -713,25 +720,36 @@ async function lireTTS(index, btn) {
 
   if (!texteRaw.trim()) return;
 
-  // Remplacer la ponctuation par son nom parlé pour la dictée
-  const texteALire = parlePonctuation(texteRaw);
+  const texteParle = parlePonctuation(texteRaw);
 
+  // TEXTE COMPLET → voix navigateur (pas de requête réseau, pas de chargement)
+  if (index === -1) {
+    const utter = new SpeechSynthesisUtterance(texteParle);
+    utter.lang = "fr-FR";
+    utter.rate = vitesse;
+    const voix = window.speechSynthesis.getVoices().find(v => v.lang.startsWith("fr"));
+    if (voix) utter.voice = voix;
+    btn.textContent = "⏸";
+    utter.onend = () => { btn.textContent = "▶"; };
+    utter.onerror = () => { btn.textContent = "▶"; };
+    window.speechSynthesis.speak(utter);
+    return;
+  }
+
+  // PHRASE INDIVIDUELLE → Google TTS (qualité, texte court = une seule requête)
   btn.textContent = "⏳";
   btn.disabled = true;
 
   try {
-    // Découper si > 200 chars (limite Google TTS)
-    const chunks = decouper(texteALire, 190);
+    const chunks = decouper(texteParle, 190);
     for (const chunk of chunks) {
       await jouerChunk(chunk, btn);
     }
   } catch (e) {
-    console.error("TTS error:", e);
-    // Fallback : voix du navigateur
-    const utter = new SpeechSynthesisUtterance(texteALire);
+    // Fallback voix navigateur si Google TTS échoue
+    const utter = new SpeechSynthesisUtterance(texteParle);
     utter.lang = "fr-FR";
-    utter.rate = parseFloat(document.getElementById("vitesse-tts").value);
-    if (audioEnCours) { audioEnCours.pause(); audioEnCours = null; }
+    utter.rate = vitesse;
     window.speechSynthesis.speak(utter);
   } finally {
     btn.textContent = "▶";
