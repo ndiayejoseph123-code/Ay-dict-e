@@ -646,7 +646,7 @@ function ouvrirDictee(id) {
   const phrasesList = document.getElementById("phrases-list");
   const texte = dicteeActive.texte_complet || "";
   phrasesArray = texte
-    .split(/[.!?]\s+/)
+    .split(/\.\s+/)
     .map(s => s.replace(/^[#*\s]+/, '').replace(/\*+/g, '').trim())
     .filter(s => s.length > 4);
 
@@ -677,6 +677,24 @@ function ouvrirDictee(id) {
   afficherPage("page-dictee");
 }
 
+// ===================== PONCTUATION PARLÉE =====================
+function parlePonctuation(texte) {
+  return texte
+    .replace(/\.\.\./g, ' points de suspension ')
+    .replace(/,/g, ' virgule ')
+    .replace(/;/g, ' point-virgule ')
+    .replace(/:/g, ' deux points ')
+    .replace(/!/g, ' point d'exclamation ')
+    .replace(/\?/g, ' point d'interrogation ')
+    .replace(/\./g, ' point ')
+    .replace(/«/g, ' ouvrez les guillemets ')
+    .replace(/»/g, ' fermez les guillemets ')
+    .replace(/\(/g, ' ouvrez la parenthèse ')
+    .replace(/\)/g, ' fermez la parenthèse ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 // ===================== TTS via Google Translate =====================
 let audioEnCours = null;
 
@@ -689,11 +707,14 @@ async function lireTTS(index, btn) {
     return;
   }
 
-  const texteALire = index === -1
+  const texteRaw = index === -1
     ? (dicteeActive?.texte_complet || "")
     : (phrasesArray[index] || "");
 
-  if (!texteALire.trim()) return;
+  if (!texteRaw.trim()) return;
+
+  // Remplacer la ponctuation par son nom parlé pour la dictée
+  const texteALire = parlePonctuation(texteRaw);
 
   btn.textContent = "⏳";
   btn.disabled = true;
