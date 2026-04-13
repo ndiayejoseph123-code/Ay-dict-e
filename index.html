@@ -666,7 +666,7 @@ function ouvrirDictee(id) {
     phrasesHtml += `
       <div class="phrase-item">
         <button class="play-btn" onclick="lireTTS('${escaped}', this)">▶</button>
-        <span class="phrase-label" style="font-size:0.8rem;color:#444">${p.substring(0,50)}${p.length>50?'…':''}</span>
+        <span class="phrase-label">Phrase ${i + 1}</span>
       </div>`;
   });
 
