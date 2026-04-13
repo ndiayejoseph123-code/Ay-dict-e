@@ -221,7 +221,7 @@
     letter-spacing: 0.5px;
     margin-bottom: 12px;
   }
-  .zone-saisie-div {
+  #zone-saisie {
     width: 100%;
     min-height: 120px;
     border: 2px solid #dde8dd;
@@ -229,21 +229,15 @@
     padding: 12px 14px;
     font-size: 16px;
     font-family: 'Nunito', sans-serif;
+    resize: none;
     outline: none;
     transition: border-color 0.2s;
     color: var(--texte);
     background: var(--fond);
     line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
+    -webkit-user-select: text;
   }
-  .zone-saisie-div:focus { border-color: var(--vert); background: #fff; }
-  .zone-saisie-div:empty::before {
-    content: attr(data-placeholder);
-    color: #aaa;
-    pointer-events: none;
-    display: block;
-  }
+  #zone-saisie:focus { border-color: var(--vert); background: #fff; }
   .vitesse-row {
     display: flex;
     align-items: center;
@@ -529,7 +523,7 @@
 
   <div class="saisie-section">
     <h3>✏️ Écris ce que tu as entendu</h3>
-    <div id="zone-saisie" class="zone-saisie-div" contenteditable="true" spellcheck="false" data-placeholder="Commence à écrire ici..."></div>
+    <textarea id="zone-saisie" placeholder="Commence à écrire ici..." autocorrect="off" autocapitalize="none" spellcheck="false" autocomplete="off" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false"></textarea>
     <button class="btn-corriger" id="btn-corriger">
       <span id="corriger-label">✨ Corriger ma dictée</span>
       <div class="spinner" id="corriger-spinner" style="display:none"></div>
@@ -581,6 +575,7 @@ const MISTRAL_PROXY = "/.netlify/functions/mistral";
 let dictees = [];
 let dicteeActive = null;
 let ttsEnCours = false;
+let phrasesArray = [];
 
 // ===================== CHARGEMENT JSON =====================
 async function chargerDictees() {
@@ -647,25 +642,24 @@ function ouvrirDictee(id) {
   badge.textContent = labelsNiveaux[dicteeActive.niveau] || dicteeActive.niveau;
   badge.className = "niveau-badge " + (classesNiveaux[dicteeActive.niveau] || "badge-debutant");
 
-  // TTS : découper le texte en phrases
+  // TTS : phrases stockées dans tableau global (évite bugs avec apostrophes dans onclick)
   const phrasesList = document.getElementById("phrases-list");
   const texte = dicteeActive.texte_complet || "";
-  const phrases = texte
-    .split(/(?<=[.!?…])\s+/)
-    .map(s => s.replace(/^#+\s*\**/,'').replace(/\*\*$/,'').trim())
+  phrasesArray = texte
+    .split(/[.!?]\s+/)
+    .map(s => s.replace(/^[#*\s]+/, '').replace(/\*+/g, '').trim())
     .filter(s => s.length > 4);
 
   let phrasesHtml = `
     <div class="phrase-item">
-      <button class="play-btn" id="btn-tts-complet" onclick="lireTTS(null, this)">▶</button>
+      <button class="play-btn" id="btn-tts-complet" onclick="lireTTS(-1, this)">▶</button>
       <span class="phrase-label">🎵 Texte complet</span>
     </div>`;
 
-  phrases.forEach((p, i) => {
-    const escaped = p.replace(/'/g, "\'").replace(/"/g, "&quot;");
+  phrasesArray.forEach((p, i) => {
     phrasesHtml += `
       <div class="phrase-item">
-        <button class="play-btn" onclick="lireTTS('${escaped}', this)">▶</button>
+        <button class="play-btn" onclick="lireTTS(${i}, this)">▶</button>
         <span class="phrase-label">Phrase ${i + 1}</span>
       </div>`;
   });
@@ -676,43 +670,90 @@ function ouvrirDictee(id) {
   phrasesList.innerHTML = phrasesHtml;
 
   // Reset
-  document.getElementById("zone-saisie").innerText = "";
+  document.getElementById("zone-saisie").value = "";
   const resultatSection = document.getElementById("resultat-section");
   resultatSection.style.display = "none";
 
   afficherPage("page-dictee");
 }
 
-// ===================== TTS =====================
-function lireTTS(texte, btn) {
-  // Si lecture en cours : arrêt
-  if (window.speechSynthesis.speaking) {
-    window.speechSynthesis.cancel();
+// ===================== TTS via Google Translate =====================
+let audioEnCours = null;
+
+async function lireTTS(index, btn) {
+  // Arrêt si lecture en cours
+  if (audioEnCours && !audioEnCours.paused) {
+    audioEnCours.pause();
+    audioEnCours = null;
     document.querySelectorAll(".play-btn").forEach(b => b.textContent = "▶");
-    ttsEnCours = false;
     return;
   }
 
-  const vitesse = parseFloat(document.getElementById("vitesse-tts").value);
-  const texteALire = texte || dicteeActive?.texte_complet || "";
-  if (!texteALire) return;
+  const texteALire = index === -1
+    ? (dicteeActive?.texte_complet || "")
+    : (phrasesArray[index] || "");
 
-  const utterance = new SpeechSynthesisUtterance(texteALire);
-  utterance.lang = "fr-FR";
-  utterance.rate = vitesse;
-  utterance.pitch = 1;
+  if (!texteALire.trim()) return;
 
-  // Choisir une voix française si disponible
-  const voix = window.speechSynthesis.getVoices().find(v => v.lang.startsWith("fr"));
-  if (voix) utterance.voice = voix;
+  btn.textContent = "⏳";
+  btn.disabled = true;
 
-  btn.textContent = "⏸";
-  ttsEnCours = true;
+  try {
+    // Découper si > 200 chars (limite Google TTS)
+    const chunks = decouper(texteALire, 190);
+    for (const chunk of chunks) {
+      await jouerChunk(chunk, btn);
+    }
+  } catch (e) {
+    console.error("TTS error:", e);
+    // Fallback : voix du navigateur
+    const utter = new SpeechSynthesisUtterance(texteALire);
+    utter.lang = "fr-FR";
+    utter.rate = parseFloat(document.getElementById("vitesse-tts").value);
+    if (audioEnCours) { audioEnCours.pause(); audioEnCours = null; }
+    window.speechSynthesis.speak(utter);
+  } finally {
+    btn.textContent = "▶";
+    btn.disabled = false;
+  }
+}
 
-  utterance.onend = () => { btn.textContent = "▶"; ttsEnCours = false; };
-  utterance.onerror = () => { btn.textContent = "▶"; ttsEnCours = false; };
+function decouper(texte, max) {
+  if (texte.length <= max) return [texte];
+  const morceaux = [];
+  let reste = texte;
+  while (reste.length > max) {
+    let coupure = reste.lastIndexOf(' ', max);
+    if (coupure < 0) coupure = max;
+    morceaux.push(reste.substring(0, coupure).trim());
+    reste = reste.substring(coupure).trim();
+  }
+  if (reste) morceaux.push(reste);
+  return morceaux;
+}
 
-  window.speechSynthesis.speak(utterance);
+function jouerChunk(texte, btn) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch("/.netlify/functions/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: texte })
+      });
+      if (!response.ok) throw new Error("TTS HTTP " + response.status);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioEnCours = audio;
+      btn.textContent = "⏸";
+      btn.disabled = false;
+      audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+      audio.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Lecture échouée")); };
+      audio.play();
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 // Slider vitesse
@@ -722,7 +763,7 @@ document.getElementById("vitesse-tts").addEventListener("input", function() {
 
 // ===================== CORRECTION MISTRAL =====================
 document.getElementById("btn-corriger").addEventListener("click", async () => {
-  const texteEleve = document.getElementById("zone-saisie").innerText.trim();
+  const texteEleve = document.getElementById("zone-saisie").value.trim();
   if (!texteEleve) {
     alert("✏️ Écris d'abord ta dictée !");
     return;
@@ -819,7 +860,7 @@ function afficherPage(id) {
 }
 
 document.getElementById("btn-retour").addEventListener("click", () => {
-  window.speechSynthesis.cancel();
+  if (audioEnCours) { audioEnCours.pause(); audioEnCours = null; }
   afficherPage("page-accueil");
 });
 
