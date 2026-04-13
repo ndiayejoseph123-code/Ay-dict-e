@@ -346,6 +346,7 @@ async function lirePhrase(index) {
     stopper(); return;
   }
   stopper();
+  stopDemande = false; // reset après stopper pour permettre la lecture
   await jouer(index);
 }
 
