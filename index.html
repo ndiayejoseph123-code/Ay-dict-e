@@ -646,7 +646,7 @@ function ouvrirDictee(id) {
   const phrasesList = document.getElementById("phrases-list");
   const texte = dicteeActive.texte_complet || "";
   phrasesArray = texte
-    .split(/\.\s+/)
+    .split(/[.!?]\s+/)
     .map(s => s.replace(/^[#*\s]+/, '').replace(/\*+/g, '').trim())
     .filter(s => s.length > 4);
 
@@ -677,79 +677,40 @@ function ouvrirDictee(id) {
   afficherPage("page-dictee");
 }
 
-// ===================== PONCTUATION PARLÉE =====================
-function parlePonctuation(texte) {
-  return texte
-    .replace(/\.\.\./g, ' points de suspension ')
-    .replace(/,/g, ' virgule ')
-    .replace(/;/g, ' point-virgule ')
-    .replace(/:/g, ' deux points ')
-    .replace(/!/g, ' point d'exclamation ')
-    .replace(/\?/g, ' point d'interrogation ')
-    .replace(/\./g, ' point ')
-    .replace(/«/g, ' ouvrez les guillemets ')
-    .replace(/»/g, ' fermez les guillemets ')
-    .replace(/\(/g, ' ouvrez la parenthèse ')
-    .replace(/\)/g, ' fermez la parenthèse ')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-
 // ===================== TTS via Google Translate =====================
 let audioEnCours = null;
 
 async function lireTTS(index, btn) {
-  const vitesse = parseFloat(document.getElementById("vitesse-tts").value);
-
-  // Arrêt si lecture en cours (audio Google TTS ou voix navigateur)
+  // Arrêt si lecture en cours
   if (audioEnCours && !audioEnCours.paused) {
     audioEnCours.pause();
     audioEnCours = null;
     document.querySelectorAll(".play-btn").forEach(b => b.textContent = "▶");
     return;
   }
-  if (window.speechSynthesis.speaking) {
-    window.speechSynthesis.cancel();
-    document.querySelectorAll(".play-btn").forEach(b => b.textContent = "▶");
-    return;
-  }
 
-  const texteRaw = index === -1
+  const texteALire = index === -1
     ? (dicteeActive?.texte_complet || "")
     : (phrasesArray[index] || "");
 
-  if (!texteRaw.trim()) return;
+  if (!texteALire.trim()) return;
 
-  const texteParle = parlePonctuation(texteRaw);
-
-  // TEXTE COMPLET → voix navigateur (pas de requête réseau, pas de chargement)
-  if (index === -1) {
-    const utter = new SpeechSynthesisUtterance(texteParle);
-    utter.lang = "fr-FR";
-    utter.rate = vitesse;
-    const voix = window.speechSynthesis.getVoices().find(v => v.lang.startsWith("fr"));
-    if (voix) utter.voice = voix;
-    btn.textContent = "⏸";
-    utter.onend = () => { btn.textContent = "▶"; };
-    utter.onerror = () => { btn.textContent = "▶"; };
-    window.speechSynthesis.speak(utter);
-    return;
-  }
-
-  // PHRASE INDIVIDUELLE → Google TTS (qualité, texte court = une seule requête)
   btn.textContent = "⏳";
   btn.disabled = true;
 
   try {
-    const chunks = decouper(texteParle, 190);
+    // Découper si > 200 chars (limite Google TTS)
+    const chunks = decouper(texteALire, 190);
     for (const chunk of chunks) {
       await jouerChunk(chunk, btn);
     }
   } catch (e) {
-    // Fallback voix navigateur si Google TTS échoue
-    const utter = new SpeechSynthesisUtterance(texteParle);
+    console.error("TTS error:", e);
+    // Fallback : voix du navigateur
+    const utter = new SpeechSynthesisUtterance(texteALire);
     utter.lang = "fr-FR";
-    utter.rate = vitesse;
+    utter.rate = parseFloat(document.getElementById("vitesse-tts").value);
+    if (audioEnCours) { audioEnCours.pause(); audioEnCours = null; }
     window.speechSynthesis.speak(utter);
   } finally {
     btn.textContent = "▶";
