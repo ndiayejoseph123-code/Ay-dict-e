@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dictée — Lecteur</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --vert: #1a7a4a;
+    --vert-clair: #e8f5ee;
+    --fond: #f7f9f7;
+    --carte: #ffffff;
+    --texte: #1a2e1a;
+    --gris: #6b7a6b;
+    --rouge: #e84040;
+    --radius: 16px;
+    --ombre: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--fond);
+    color: var(--texte);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 24px);
+  }
+  header {
+    background: var(--vert);
+    color: #fff;
+    padding: 18px 20px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  header h1 { font-family: 'Baloo 2', cursive; font-size: 1.5rem; font-weight: 800; }
+  header p { font-size: 0.82rem; opacity: 0.85; margin-top: 3px; }
+
+  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+  .carte {
+    background: var(--carte);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--ombre);
+  }
+  .carte h2 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gris);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  #zone-texte {
+    width: 100%;
+    min-height: 150px;
+    border: 2px solid #dde8dd;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 16px;
+    font-family: 'Nunito', sans-serif;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+    color: var(--texte);
+    background: var(--fond);
+    transition: border-color 0.2s;
+  }
+  #zone-texte:focus { border-color: var(--vert); background: #fff; }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .vitesse-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 160px;
+  }
+  .vitesse-row label { font-size: 0.82rem; font-weight: 700; color: var(--gris); white-space: nowrap; }
+  .vitesse-row input[type=range] { flex: 1; accent-color: var(--vert); }
+  .vitesse-val { font-size: 0.82rem; font-weight: 700; color: var(--vert); min-width: 28px; }
+
+  .btn-generer {
+    background: var(--vert);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 22px;
+    font-size: 0.95rem;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .btn-generer:active { transform: scale(0.97); background: #145e38; }
+
+  #section-phrases { display: none; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .btn-tout {
+    flex: 1;
+    background: var(--vert);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 0.9rem;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-tout:disabled { background: #aaa; }
+  .btn-stop {
+    background: #fdecea;
+    color: var(--rouge);
+    border: 2px solid var(--rouge);
+    border-radius: 10px;
+    padding: 13px 18px;
+    font-size: 0.9rem;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .phrase-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--vert-clair);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .phrase-item.active { border-color: var(--vert); background: #d0ede0; }
+
+  .play-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--vert);
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .play-btn:disabled { background: #aaa; cursor: not-allowed; }
+  .play-btn.loading { background: #e67e22; }
+  .play-btn.playing { background: var(--rouge); }
+
+  .phrase-info { flex: 1; }
+  .phrase-num { font-weight: 700; font-size: 0.9rem; color: var(--vert); }
+
+  .spinner-inline {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .tsq-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .btn-tsq {
+    flex: 1;
+    background: #1565c0;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 0.9rem;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 120px;
+    transition: background 0.2s;
+  }
+  .btn-tsq:disabled { background: #aaa; cursor: not-allowed; }
+  .btn-tsq.corrige { background: #6a1b9a; }
+  #section-tsq { display: none; }
+  .tsq-bloc {
+    background: var(--carte);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--ombre);
+  }
+  .tsq-bloc h2 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gris);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+  .tsq-st { font-family: 'Baloo 2', cursive; font-size: 0.95rem; font-weight: 700;
+    color: #1565c0; margin: 14px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #e3f0ff; }
+  .tsq-st.conj { color: #6a1b9a; border-color: #f3e5f5; }
+  .tsq-st.gram { color: #1a7a4a; border-color: #e8f5ee; }
+  .tsq-st.cor { color: #e65100; border-color: #fff3e0; }
+  .tsq-q { background: #f4f8ff; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+    font-size: 0.9rem; line-height: 1.6; border-left: 3px solid #1565c0; white-space: pre-wrap; }
+  .tsq-q.conj { background: #faf4ff; border-color: #6a1b9a; }
+  .tsq-q.gram { background: #f4fff8; border-color: #1a7a4a; }
+  .tsq-q.cor { background: #fff8f0; border-color: #e65100; }
+  .spinner-tsq { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎵 Lecteur de Dictée</h1>
+  <p>Colle ton texte et écoute phrase par phrase</p>
+</header>
+
+<div class="container">
+
+  <div class="carte">
+    <h2>📝 Texte de la dictée</h2>
+    <textarea id="zone-texte" placeholder="Colle ici le texte de ta dictée..."></textarea>
+    <div class="controls">
+      <div class="vitesse-row">
+        <label>🐢 Vitesse</label>
+        <input type="range" id="vitesse" min="0.5" max="1.0" step="0.05" value="0.75">
+        <span class="vitesse-val" id="vitesse-val">0.75</span>
+      </div>
+      <button class="btn-generer" onclick="genererPhrases()">▶ Générer</button>
+    </div>
+    <div class="tsq-row">
+      <button class="btn-tsq" id="btn-tsq" onclick="genererTSQ()">
+        <span id="tsq-label">📋 TSQ</span>
+        <div class="spinner-tsq" id="tsq-spinner" style="display:none"></div>
+      </button>
+      <button class="btn-tsq corrige" id="btn-corrige-tsq" onclick="genererCorrigeTSQ()" disabled>
+        <span id="corrige-label">✅ Corrigé TSQ</span>
+        <div class="spinner-tsq" id="corrige-spinner" style="display:none"></div>
+      </button>
+    </div>
+  </div>
+
+  <div id="section-tsq">
+    <div class="tsq-bloc" id="tsq-contenu"></div>
+  </div>
+
+  <div id="section-phrases">
+    <div class="carte">
+      <h2 id="titre-phrases">📚 Phrases</h2>
+      <div class="btn-row">
+        <button class="btn-tout" id="btn-tout" onclick="lireTout()">🎵 Lire tout</button>
+        <button class="btn-stop" onclick="stopper()">⏹ Stop</button>
+      </div>
+      <div id="liste-phrases"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TTS_PROXY = "/.netlify/functions/tts";
+
+let phrasesArray = [];
+let audioEnCours = null;
+let stopDemande = false;
+let indexEnCours = -1;
+
+// Slider vitesse
+document.getElementById("vitesse").addEventListener("input", function() {
+  document.getElementById("vitesse-val").textContent = this.value;
+});
+
+// Générer les phrases
+function genererPhrases() {
+  const texte = document.getElementById("zone-texte").value.trim();
+  if (!texte) { alert("✏️ Colle d'abord un texte !"); return; }
+
+  stopper();
+
+  phrasesArray = texte
+    .split(/\.\s+|\.\n|\.$/mg)
+    .map(s => s.replace(/^[#*\-\s]+/, '').replace(/\*+/g, '').trim())
+    .filter(s => s.length > 3)
+    .map(s => s + '.');
+
+  const section = document.getElementById("section-phrases");
+  const liste = document.getElementById("liste-phrases");
+  const titre = document.getElementById("titre-phrases");
+
+  if (phrasesArray.length === 0) {
+    section.style.display = "block";
+    liste.innerHTML = `<p style="color:var(--gris);text-align:center;padding:20px">Aucune phrase trouvée. Vérifie que le texte contient des points.</p>`;
+    return;
+  }
+
+  titre.textContent = `📚 ${phrasesArray.length} phrase${phrasesArray.length > 1 ? "s" : ""}`;
+
+  liste.innerHTML = phrasesArray.map((p, i) => `
+    <div class="phrase-item" id="item-${i}">
+      <button class="play-btn" id="btn-${i}" onclick="lirePhrase(${i})">▶</button>
+      <div class="phrase-info">
+        <div class="phrase-num">Phrase ${i + 1}</div>
+      </div>
+    </div>
+  `).join('');
+
+  section.style.display = "block";
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// Lire une phrase individuelle
+async function lirePhrase(index) {
+  // Si cette phrase joue déjà → stop
+  if (indexEnCours === index && audioEnCours && !audioEnCours.paused) {
+    stopper(); return;
+  }
+  stopper();
+  await jouer(index);
+}
+
+// Lire tout en séquence
+async function lireTout() {
+  stopper();
+  stopDemande = false;
+  document.getElementById("btn-tout").disabled = true;
+
+  for (let i = 0; i < phrasesArray.length; i++) {
+    if (stopDemande) break;
+    await jouer(i);
+    if (stopDemande) break;
+    await attendre(350);
+  }
+
+  document.getElementById("btn-tout").disabled = false;
+}
+
+// Jouer une phrase via Google TTS
+async function jouer(index) {
+  const texte = phrasesArray[index];
+  if (!texte) return;
+
+  setBouton(index, "loading");
+  indexEnCours = index;
+
+  const item = document.getElementById("item-" + index);
+  if (item) { item.classList.add("active"); item.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+
+  try {
+    // Découper si trop long pour Google TTS
+    const morceaux = decouper(texte, 190);
+    for (const morceau of morceaux) {
+      if (stopDemande) break;
+      await jouerMorceau(morceau, index);
+    }
+  } catch (e) {
+    console.warn("Google TTS échoué, fallback navigateur:", e.message);
+    // Fallback voix navigateur
+    await fallbackNavigateur(texte);
+  }
+
+  resetBouton(index);
+  if (item) item.classList.remove("active");
+  if (indexEnCours === index) indexEnCours = -1;
+}
+
+function jouerMorceau(texte, index) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const vitesse = parseFloat(document.getElementById("vitesse").value);
+      const resp = await fetch(TTS_PROXY, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: texte })
+      });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+
+      // Appliquer la vitesse
+      audio.playbackRate = vitesse <= 0.75 ? 0.85 : 1.0;
+
+      audioEnCours = audio;
+      setBouton(index, "playing");
+
+      audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+      audio.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Lecture échouée")); };
+      audio.play();
+    } catch(e) {
+      reject(e);
+    }
+  });
+}
+
+function fallbackNavigateur(texte) {
+  return new Promise(resolve => {
+    const utter = new SpeechSynthesisUtterance(texte);
+    utter.lang = "fr-FR";
+    utter.rate = parseFloat(document.getElementById("vitesse").value);
+    const voix = window.speechSynthesis.getVoices().find(v => v.lang.startsWith("fr"));
+    if (voix) utter.voice = voix;
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    window.speechSynthesis.speak(utter);
+  });
+}
+
+function stopper() {
+  stopDemande = true;
+  if (audioEnCours) { audioEnCours.pause(); audioEnCours = null; }
+  window.speechSynthesis.cancel();
+  if (indexEnCours >= 0) {
+    resetBouton(indexEnCours);
+    const item = document.getElementById("item-" + indexEnCours);
+    if (item) item.classList.remove("active");
+  }
+  indexEnCours = -1;
+  const btnTout = document.getElementById("btn-tout");
+  if (btnTout) btnTout.disabled = false;
+}
+
+function setBouton(index, etat) {
+  const btn = document.getElementById("btn-" + index);
+  if (!btn) return;
+  btn.classList.remove("loading", "playing");
+  if (etat === "loading") { btn.innerHTML = '<div class="spinner-inline" style="display:block"></div>'; btn.classList.add("loading"); }
+  else if (etat === "playing") { btn.innerHTML = "⏸"; btn.classList.add("playing"); }
+}
+
+function resetBouton(index) {
+  const btn = document.getElementById("btn-" + index);
+  if (!btn) return;
+  btn.innerHTML = "▶";
+  btn.classList.remove("loading", "playing");
+  btn.disabled = false;
+}
+
+function decouper(texte, max) {
+  if (texte.length <= max) return [texte];
+  const morceaux = [];
+  let reste = texte;
+  while (reste.length > max) {
+    let coupure = reste.lastIndexOf(' ', max);
+    if (coupure < 0) coupure = max;
+    morceaux.push(reste.substring(0, coupure).trim());
+    reste = reste.substring(coupure).trim();
+  }
+  if (reste) morceaux.push(reste);
+  return morceaux;
+}
+
+function attendre(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+<script>
+// ===================== TSQ =====================
+const MISTRAL_PROXY = "/.netlify/functions/mistral";
+let tsqGenere = null;
+
+async function genererTSQ() {
+  const texte = document.getElementById("zone-texte").value.trim();
+  if (!texte) { alert("Colle d'abord un texte !"); return; }
+
+  const btn = document.getElementById("btn-tsq");
+  const label = document.getElementById("tsq-label");
+  const spinner = document.getElementById("tsq-spinner");
+  btn.disabled = true;
+  label.style.display = "none";
+  spinner.style.display = "block";
+
+  const section = document.getElementById("section-tsq");
+  const contenu = document.getElementById("tsq-contenu");
+  section.style.display = "block";
+  contenu.innerHTML = '<h2>📋 TSQ en cours de génération...</h2>';
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const prompt = "Tu es un professeur de français du primaire au Sénégal.\n\nVoici le texte d'une dictée :\n" + texte + "\n\nGénère un TSQ complet avec 3 parties.\n\nRéponds UNIQUEMENT en JSON valide sans aucun texte avant ou après :\n{\"comprehension\":[\"question 1\",\"question 2\",\"question 3\",\"question 4\",\"question 5\"],\"conjugaison\":[\"exercice 1\",\"exercice 2\",\"exercice 3\",\"exercice 4\"],\"grammaire\":[\"exercice 1\",\"exercice 2\",\"exercice 3\",\"exercice 4\"]}\n\nPARTIE 1 COMPREHENSION : 5 questions de compréhension du texte.\nPARTIE 2 CONJUGAISON : 4 exercices de conjugaison sur les verbes du texte (relever les verbes, donner l infinitif, conjuguer à d autres temps).\nPARTIE 3 GRAMMAIRE ET ANALYSE LOGIQUE : 4 exercices d analyse grammaticale et logique tirés du texte.";
+
+  try {
+    const resp = await fetch(MISTRAL_PROXY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "mistral-small-latest", max_tokens: 1500, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await resp.json();
+    const raw = (data.choices?.[0]?.message?.content || "").replace(/```json|```/g, "").trim();
+    tsqGenere = JSON.parse(raw);
+    afficherTSQ(tsqGenere);
+    document.getElementById("btn-corrige-tsq").disabled = false;
+  } catch(e) {
+    contenu.innerHTML = '<h2>📋 TSQ</h2><p style="color:var(--rouge);font-weight:700">Erreur : ' + e.message + '</p>';
+  } finally {
+    btn.disabled = false;
+    label.style.display = "inline";
+    spinner.style.display = "none";
+  }
+}
+
+function afficherTSQ(data) {
+  const contenu = document.getElementById("tsq-contenu");
+  let html = '<h2>📋 TSQ — Questions</h2>';
+  html += '<div class="tsq-st">🔵 Compréhension du texte</div>';
+  data.comprehension.forEach((q, i) => { html += '<div class="tsq-q">' + (i+1) + '. ' + q + '</div>'; });
+  html += '<div class="tsq-st conj">🟣 Conjugaison</div>';
+  data.conjugaison.forEach((q, i) => { html += '<div class="tsq-q conj">' + (i+1) + '. ' + q + '</div>'; });
+  html += '<div class="tsq-st gram">🟢 Grammaire &amp; Analyse logique</div>';
+  data.grammaire.forEach((q, i) => { html += '<div class="tsq-q gram">' + (i+1) + '. ' + q + '</div>'; });
+  contenu.innerHTML = html;
+}
+
+async function genererCorrigeTSQ() {
+  if (!tsqGenere) { alert("Génère d'abord le TSQ !"); return; }
+  const texte = document.getElementById("zone-texte").value.trim();
+
+  const btn = document.getElementById("btn-corrige-tsq");
+  const label = document.getElementById("corrige-label");
+  const spinner = document.getElementById("corrige-spinner");
+  btn.disabled = true;
+  label.style.display = "none";
+  spinner.style.display = "block";
+
+  const questions = "COMPREHENSION:\n" + tsqGenere.comprehension.map((q,i) => (i+1)+". "+q).join("\n")
+    + "\n\nCONJUGAISON:\n" + tsqGenere.conjugaison.map((q,i) => (i+1)+". "+q).join("\n")
+    + "\n\nGRAMMAIRE:\n" + tsqGenere.grammaire.map((q,i) => (i+1)+". "+q).join("\n");
+
+  const prompt = "Tu es un professeur de français. Donne la correction complète de ce TSQ.\n\nTEXTE :\n" + texte + "\n\n" + questions + "\n\nRéponds UNIQUEMENT en JSON valide :\n{\"comprehension\":[\"réponse 1\",\"réponse 2\",\"réponse 3\",\"réponse 4\",\"réponse 5\"],\"conjugaison\":[\"correction 1\",\"correction 2\",\"correction 3\",\"correction 4\"],\"grammaire\":[\"correction 1\",\"correction 2\",\"correction 3\",\"correction 4\"]}";
+
+  try {
+    const resp = await fetch(MISTRAL_PROXY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "mistral-small-latest", max_tokens: 1500, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await resp.json();
+    const raw = (data.choices?.[0]?.message?.content || "").replace(/```json|```/g, "").trim();
+    const corrige = JSON.parse(raw);
+    afficherCorrige(corrige);
+  } catch(e) {
+    document.getElementById("tsq-contenu").innerHTML += '<p style="color:var(--rouge);font-weight:700;margin-top:12px">Erreur correction : ' + e.message + '</p>';
+  } finally {
+    btn.disabled = false;
+    label.style.display = "inline";
+    spinner.style.display = "none";
+  }
+}
+
+function afficherCorrige(data) {
+  const contenu = document.getElementById("tsq-contenu");
+  let html = contenu.innerHTML;
+  html += '<div style="margin-top:20px;padding-top:16px;border-top:3px dashed #ddd">';
+  html += '<h2 style="font-family:Baloo 2,cursive;font-size:1rem;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">CORRIGÉ TSQ</h2>';
+  html += '<div class="tsq-st cor">🔵 Corrigé Compréhension</div>';
+  data.comprehension.forEach((r, i) => { html += '<div class="tsq-q cor"><strong>' + (i+1) + '.</strong> ' + r + '</div>'; });
+  html += '<div class="tsq-st cor">🟣 Corrigé Conjugaison</div>';
+  data.conjugaison.forEach((r, i) => { html += '<div class="tsq-q cor"><strong>' + (i+1) + '.</strong> ' + r + '</div>'; });
+  html += '<div class="tsq-st cor">🟢 Corrigé Grammaire</div>';
+  data.grammaire.forEach((r, i) => { html += '<div class="tsq-q cor"><strong>' + (i+1) + '.</strong> ' + r + '</div>'; });
+  html += '</div>';
+  contenu.innerHTML = html;
+  contenu.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+</script>
+</body>
+</html>
