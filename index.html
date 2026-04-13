@@ -508,7 +508,7 @@
 
   <div class="saisie-section">
     <h3>✏️ Écris ce que tu as entendu</h3>
-    <textarea id="zone-saisie" placeholder="Commence à écrire ici..."></textarea>
+    <textarea id="zone-saisie" placeholder="Commence à écrire ici..." autocorrect="off" autocapitalize="off" spellcheck="false" autocomplete="off"></textarea>
     <button class="btn-corriger" id="btn-corriger">
       <span id="corriger-label">✨ Corriger ma dictée</span>
       <div class="spinner" id="corriger-spinner" style="display:none"></div>
@@ -564,7 +564,7 @@ let audioActif = null;
 // ===================== CHARGEMENT JSON =====================
 async function chargerDictees() {
   try {
-    const r = await fetch(DICTEES_URL);
+    const r = await fetch(DICTEES_URL + "?t=" + Date.now());
     const data = await r.json();
     dictees = data.dictees || [];
     afficherListe();
@@ -598,12 +598,13 @@ function afficherListe() {
     html += `<div class="section-titre" style="margin-top:18px">${emojisNiveaux[niv]} ${labelsNiveaux[niv]}</div>`;
     niveaux[niv].forEach(d => {
       const nbPhrases = (d.phrases || []).length;
+      const subLabel = nbPhrases > 0 ? `${nbPhrases} phrase${nbPhrases > 1 ? "s" : ""}` : "Audio complet";
       html += `
         <div class="dictee-card" onclick="ouvrirDictee('${d.id}')">
           <div class="card-icon">📝</div>
           <div class="card-info">
             <div class="card-titre">${d.titre}</div>
-            <div class="card-sub">${nbPhrases} phrase${nbPhrases > 1 ? "s" : ""}</div>
+            <div class="card-sub">${subLabel}</div>
           </div>
           <div class="card-fleche">›</div>
         </div>`;
