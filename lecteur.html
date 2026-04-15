@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Dictée — Lecteur</title>
+<title>Jo Dictée — Lecteur</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -237,9 +237,111 @@
   .tsq-q.cor { background: #fff8f0; border-color: #e65100; }
   .spinner-tsq { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4);
     border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+  /* ÉCRAN CODE D'ACCÈS */
+  #ecran-acces {
+    position: fixed;
+    inset: 0;
+    background: var(--vert);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 24px;
+  }
+  .acces-carte {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  }
+  .acces-logo { font-size: 2.8rem; margin-bottom: 8px; }
+  .acces-titre {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--vert);
+    margin-bottom: 4px;
+  }
+  .acces-sous { font-size: 0.85rem; color: var(--gris); margin-bottom: 24px; }
+  .acces-input {
+    width: 100%;
+    border: 2px solid #dde8dd;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 1.6rem;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 8px;
+    outline: none;
+    text-transform: uppercase;
+    color: var(--texte);
+    background: var(--fond);
+    transition: border-color 0.2s;
+    margin-bottom: 14px;
+  }
+  .acces-input:focus { border-color: var(--vert); background: #fff; }
+  .acces-btn {
+    width: 100%;
+    background: var(--vert);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 1rem;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+  }
+  .acces-btn:disabled { background: #aaa; }
+  .acces-erreur {
+    color: var(--rouge);
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-top: 10px;
+    display: none;
+    min-height: 20px;
+  }
+  .acces-expiry {
+    font-size: 0.75rem;
+    color: var(--gris);
+    margin-top: 14px;
+  }
+  .spinner-acces {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
 </style>
 </head>
 <body>
+
+<div id="ecran-acces">
+  <div class="acces-carte">
+    <div class="acces-logo">🎵</div>
+    <div class="acces-titre">Jo Dictée</div>
+    <div class="acces-sous">Entre ton code d'accès pour continuer</div>
+    <div style="font-size:0.8rem;color:#888;margin-bottom:16px;margin-top:-10px">Pas de code ? Commande via WhatsApp<br><a href="https://wa.me/221777195288" style="color:var(--vert);font-weight:700;text-decoration:none">📲 +221 77 719 52 88</a></div>
+    <input class="acces-input" id="code-input" type="text" maxlength="4" placeholder="••••" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <button class="acces-btn" id="acces-btn" onclick="validerCode()">
+      <span id="acces-label">Accéder</span>
+      <div class="spinner-acces" id="acces-spinner" style="display:none"></div>
+    </button>
+    <div class="acces-erreur" id="acces-erreur"></div>
+    <div class="acces-expiry" id="acces-expiry"></div>
+  </div>
+</div>
 
 <header>
   <h1>🎵 Lecteur de Dictée</h1>
@@ -591,6 +693,93 @@ function afficherCorrige(data) {
   contenu.innerHTML = html;
   contenu.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+// ===================== CODE D'ACCÈS =====================
+const CODES_URL = "https://raw.githubusercontent.com/ndiayejoseph123-code/Ay-dict-e/main/codes.json";
+const STORAGE_KEY = "jodictee_acces";
+
+// Vérifier si déjà connecté au chargement
+window.addEventListener("DOMContentLoaded", () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const { code, expiry } = JSON.parse(saved);
+      const today = new Date().toISOString().split("T")[0];
+      if (expiry >= today) {
+        cacherEcranAcces(expiry);
+        return;
+      }
+    } catch(e) {}
+    localStorage.removeItem(STORAGE_KEY);
+  }
+  // Forcer le champ en majuscules
+  document.getElementById("code-input").addEventListener("input", function() {
+    this.value = this.value.toUpperCase();
+  });
+  document.getElementById("code-input").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") validerCode();
+  });
+});
+
+async function validerCode() {
+  const code = document.getElementById("code-input").value.trim().toUpperCase();
+  if (code.length !== 4) {
+    afficherErreur("Le code doit contenir 4 caractères.");
+    return;
+  }
+
+  const btn = document.getElementById("acces-btn");
+  const label = document.getElementById("acces-label");
+  const spinner = document.getElementById("acces-spinner");
+  const erreur = document.getElementById("acces-erreur");
+
+  btn.disabled = true;
+  label.style.display = "none";
+  spinner.style.display = "block";
+  erreur.style.display = "none";
+
+  try {
+    const resp = await fetch(CODES_URL + "?t=" + Date.now());
+    const data = await resp.json();
+    const today = new Date().toISOString().split("T")[0];
+
+    const entree = data.codes.find(c => c.code.toUpperCase() === code);
+
+    if (!entree) {
+      afficherErreur("❌ Code invalide.");
+    } else if (entree.expiry < today) {
+      afficherErreur("⏰ Ce code a expiré le " + formatDate(entree.expiry) + ".");
+    } else {
+      // Code valide → sauvegarder et accéder
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ code, expiry: entree.expiry }));
+      cacherEcranAcces(entree.expiry);
+    }
+  } catch(e) {
+    afficherErreur("Erreur de connexion. Vérifie internet.");
+  } finally {
+    btn.disabled = false;
+    label.style.display = "inline";
+    spinner.style.display = "none";
+  }
+}
+
+function cacherEcranAcces(expiry) {
+  document.getElementById("ecran-acces").style.display = "none";
+}
+
+function afficherErreur(msg) {
+  const el = document.getElementById("acces-erreur");
+  el.textContent = msg;
+  el.style.display = "block";
+  document.getElementById("code-input").value = "";
+  document.getElementById("code-input").focus();
+}
+
+function formatDate(dateStr) {
+  const [y, m, d] = dateStr.split("-");
+  return d + "/" + m + "/" + y;
+}
+
 </script>
 </body>
 </html>
